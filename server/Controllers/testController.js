@@ -1,5 +1,28 @@
 const ShipmentModel = require('../Models/Shipment.js');
 
+
+function extractUid(input) {
+    // Extract the uid string from the object
+    const uidString = input;
+
+    // Regular expression to match numbers in the UID string
+    const matches = uidString.match(/\d+/g);
+
+    if (matches) {
+        // Join matched numbers with a space
+        const extractedUid = matches.join(' ');
+
+        // Return the formatted response
+        return { uid: extractedUid };
+    } else {
+        // Handle the case where no numbers were found
+        return { uid: '' };
+    }
+}
+
+// Extract and format the UID
+
+
 const landingController = async (req, res) => {
     res.status(200).json({ msg: "Getting Page!" });
 
@@ -10,6 +33,14 @@ const testDataController = (req, res) => {
 
 }
 
+const pos = {
+    1: 'Manufacturers Warehouse',
+    2: 'Supplier Warehouse',
+    3: 'Out For Delivery',
+    4: 'Delivered',
+    5: 'Returned',
+}
+
 const createShipment = async (req, res) => {
 
     const newShipment = new ShipmentModel(req.body);
@@ -17,7 +48,13 @@ const createShipment = async (req, res) => {
     newShipment
         .save()
         .then(r => {
-            return res.status(201).json({ msg: "New Shipment Added Successfully!" });
+            const loc = pos[r.currentLocation];
+            return res.status(201).json({
+                msg: "New Shipment Added Successfully!", ShipmentData: {
+                    ...r,
+                    currentLocation: loc,
+                }
+            });
         })
         .catch(e => {
             console.log(e);
@@ -44,18 +81,51 @@ const getAllShipments = async (req, res) => {
 
 }
 
-const updateShipment = async (req,res) => { 
-    const _id = req.params.id;
-    
+const updateShipment = async (req, res) => {
+    // console.log(req.body);
+
+    const { uid } = req.body;
+    const newUid = extractUid(uid);
+    const id = newUid.uid;
+
     ShipmentModel
-        .findOneAndUpdate({uid : _id},{$inc : {currentLocation : 1}},{new : true})
+        .findOneAndUpdate({ uid: id }, { $inc: { currentLocation: 1 } }, { new: true })
         .exec()
-        .then(r => {return r.save()})
-        .then(rr => {return res.status(200).json({msg : "Shipment Updated"})})
+        .then(r => { return r.save() })
+        .then(rr => {
+            const loc = pos[rr.currentLocation];
+            return res.status(200).json({
+                msg: "Shipment Updated",
+                ShipmentData: {
+                    ...rr._doc,
+                    currentLocation: loc,
+                }
+            })
+        })
         .catch(e => {
             console.log(e);
-            res.status(500).json({msg : "Internal Server Error"});
+            res.status(500).json({ msg: "Internal Server Error" });
         })
- }
+}
 
-module.exports = { landingController, testDataController, createShipment, getAllShipments,updateShipment };
+const deleteShipment = async (req, res) => {
+    const uid = req.params.id;
+
+    ShipmentModel
+        .findOneAndDelete({ uid: uid })
+        .exec()
+        .then(r => {
+            return res.status(200).json({ msg: 'Shipment deleted successfully!' });
+
+        })
+        .catch(e => {
+            console.log(e);
+            res.status(500).json({ msg: "Internal Server Error" });
+
+        })
+}
+
+module.exports = {
+    landingController, testDataController, createShipment, getAllShipments,
+    updateShipment, deleteShipment
+};
