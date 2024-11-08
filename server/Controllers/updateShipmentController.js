@@ -33,18 +33,18 @@ const updateShipment = async (req, res) => {
         const loc = checkPoints[savedShipment.currentLocation];
 
         // Interact with the smart contract
-        const contract = new ethers.Contract(contractAddress, contractABI, signer);
+       // const contract = new ethers.Contract(contractAddress, contractABI, signer);
 
         // Call the smart contract's update location function
-        const tx = await contract.updateLocation(id);  // Assuming the contract function takes UID as an argument
-        const receipt = await tx.wait();  // Wait for the transaction to be confirmed
+        //const tx = await contract.updateLocation(id);  // Assuming the contract function takes UID as an argument
+        //const receipt = await tx.wait();  // Wait for the transaction to be confirmed
 
-        console.log('Transaction Hash:', receipt.transactionHash);
+        //console.log('Transaction Hash:', receipt.transactionHash);
 
         // Respond with the updated shipment data
         res.status(200).json({
             msg: "Shipment Updated",
-            TransactionHash: receipt.transactionHash,  // Transaction hash for tracking on-chain
+            //TransactionHash: receipt.transactionHash,  // Transaction hash for tracking on-chain
             ShipmentData: {
                 ...savedShipment._doc,
                 currentLocation: loc,

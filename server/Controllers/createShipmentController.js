@@ -15,25 +15,35 @@ const signer = new ethers.Wallet(process.env.PRIVATE_KEY, provider);
 
 const createShipment = async (req, res) => {
     try {
-        // Create new shipment and save it to MongoDB
-        const newShipment = new ShipmentModel(req.body);
-        //const savedShipment = await newShipment.save();
-        //const loc = checkPoints[savedShipment.currentLocation];
+        console.log(req.body);
 
         // Extract data for blockchain interaction
         const { ShipmentName, uid } = req.body;
+
+        const shipment = await ShipmentModel.findOne({uid : uid});
+
+        if(shipment){
+            return res.status(403).json({msg : "Shipment with uid already exists!"});
+        }
+
+        // Create new shipment and save it to MongoDB
+        const newShipment = new ShipmentModel(req.body);
+        const savedShipment = await newShipment.save();
+        const loc = checkPoints[savedShipment.currentLocation];
+
+
         console.log(`name : ${ShipmentName} and rfid : ${uid}`);
-        
+
         // Smart Contract Instance for intraction
-        const contract = new ethers.Contract(contractAddress, contractABI, signer);
+        //const contract = new ethers.Contract(contractAddress, contractABI, signer);
 
 
         // Call the smart contract to register the product on the blockchain
-        const tx = await contract.registerProduct(ShipmentName, uid, "Manufact");
+        //const tx = await contract.registerProduct(ShipmentName, uid, "Manufact");
 
         //console.log(tx);
-        
-        const receipt = await tx.wait();  // Wait for the transaction to be mined
+
+        //const receipt = await tx.wait();  // Wait for the transaction to be mined
 
         // Respond with shipment data and blockchain transaction details
         return res.status(201).json({
@@ -42,10 +52,10 @@ const createShipment = async (req, res) => {
                 ...savedShipment._doc,
                 currentLocation: loc,
             },
-            Blockchain: {
-                TransactionHash: receipt.transactionHash,
-                Status: receipt.status ? "Success" : "Failed"
-            }
+            // Blockchain: {
+            //     TransactionHash: receipt.transactionHash,
+            //     Status: receipt.status ? "Success" : "Failed"
+            // }
         });
     } catch (error) {
         // Check if the error is related to "Product already registered"
@@ -58,5 +68,6 @@ const createShipment = async (req, res) => {
         return res.status(500).json({ msg: "Internal Server Error" });
     }
 };
+
 
 module.exports = createShipment;
