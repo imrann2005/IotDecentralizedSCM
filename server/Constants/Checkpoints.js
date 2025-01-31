@@ -15,5 +15,6 @@ const checkPoints = {
     14: "Returned",
     15: "Disposed"
 }
+/* Checkpoints for checking out different warhouses */
 
 module.exports = checkPoints;

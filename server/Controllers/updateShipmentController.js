@@ -9,8 +9,8 @@ require('dotenv').config();
 const contractABI = require('../../artifacts/contracts/ProductProvenence.sol/ProductProvenance.json').abi;
 const contractAddress = process.env.PRODUCT_PROVENANCE_ADDRESS;
 
-const providers = new ethers.JsonRpcProvider(process.env.PUBLIC_AMOY_RPC_URL);
-const signer = new ethers.Wallet(process.env.PRIVATE_KEY,providers);
+// const providers = new ethers.JsonRpcProvider(process.env.PUBLIC_AMOY_RPC_URL);
+// const signer = new ethers.Wallet(process.env.PRIVATE_KEY,providers);
 
 const updateShipment = async (req, res) => {
     try {
